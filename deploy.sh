@@ -15,7 +15,8 @@ ETAPA="pré-checagem"
 ETAPA="git pull"
 echo -e "${Y}🔄 Atualizando o código (git pull)...${N}"
 git pull --ff-only
-VERSAO="$(grep -m1 -oE 'versao: *"[0-9]+\.[0-9]+\.[0-9]+"' frontend/src/data/changelog.js | grep -oE '[0-9]+\.[0-9]+\.[0-9]+')"
+# Versão = topo do changelog (primeira ocorrência).
+VERSAO="$(grep -oE 'versao: *"[0-9]+\.[0-9]+\.[0-9]+"' frontend/src/data/changelog.js | head -1 | grep -oE '[0-9]+\.[0-9]+\.[0-9]+')"
 echo -e "${G}   commit: $(git log -1 --format='%h %s')${N}"
 echo -e "${G}   versão no código: ${VERSAO:-desconhecida}${N}"
 
@@ -42,7 +43,8 @@ NO_AR=""; BUNDLE=""
 for i in $(seq 1 20); do
   BUNDLE="$(docker exec academiamilla-web wget -qO- http://127.0.0.1/ 2>/dev/null | grep -oE 'assets/index-[A-Za-z0-9_-]+\.js' | head -1)"
   if [ -n "$BUNDLE" ]; then
-    NO_AR="$(docker exec academiamilla-web wget -qO- "http://127.0.0.1/$BUNDLE" 2>/dev/null | grep -m1 -oE 'versao:"[0-9]+\.[0-9]+\.[0-9]+"' | grep -oE '[0-9]+\.[0-9]+\.[0-9]+')"
+    # O pacote minificado fica numa linha só e traz todo o changelog: vale a PRIMEIRA versão (a mais recente).
+    NO_AR="$(docker exec academiamilla-web wget -qO- "http://127.0.0.1/$BUNDLE" 2>/dev/null | grep -oE 'versao:"[0-9]+\.[0-9]+\.[0-9]+"' | head -1 | grep -oE '[0-9]+\.[0-9]+\.[0-9]+')"
     [ -n "$NO_AR" ] && break
   fi
   sleep 2
