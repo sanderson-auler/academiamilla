@@ -2,6 +2,14 @@
 // O deploy.sh lê a versão daqui e confere se é a mesma que está no ar.
 export const CHANGELOG = [
   {
+    versao: "0.2.0",
+    data: "2026-11-22",
+    itens: [
+      "Administração: login, primeiro acesso por convite de uso único e área administrativa.",
+      "Configuração de e-mail de envio (SMTP) editável pela tela: salvar, enviar teste e remover; senha guardada cifrada.",
+    ],
+  },
+  {
     versao: "0.1.0",
     data: "2026-11-22",
     itens: [

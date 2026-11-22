@@ -26,10 +26,16 @@ Projeto **novo e isolado**. Não compartilha servidor, banco, storage nem Git co
 - Textos da interface em **português do Brasil**, UTF-8 sem BOM.
 - Correções cirúrgicas: não refatore o que já está homologado.
 
-## 5. Versão e changelog
+## 5. Banco, administração e configurações
+- **Migrações:** arquivos `backend/db/migrations/NNN_*.sql`, aplicados em ordem no boot da API (`migrar.js`, tabela `schema_migracoes`). Nunca edite uma migração já aplicada: crie a próxima.
+- **Administração:** `/entrar`, `/admin`. Usuários na tabela `usuarios` (senha bcrypt, sessão JWT de 8 h). O primeiro administrador é criado por **convite de uso único** gerado na VPS: `docker exec academiamilla-api node scripts/convite-admin.js` (opção 12 do instalar-vps) → link `/primeiro-acesso?token=...` válido por 24 h.
+- **Configurações editáveis pela tela** (CRUD na administração), não no `.env`: hoje, **E-mail de envio (SMTP)** — tabela `config_email` (linha única), senha cifrada com `pgp_sym_encrypt` usando o `SESSION_SECRET`; nunca devolvida para o frontend. Envio passa por `backend/lib/email.js` (`enviarEmail`).
+- Segredos de infraestrutura (banco, JWT, R2) continuam no `backend/.env`.
+
+## 6. Versão e changelog
 Fonte da verdade: o **topo** de `frontend/src/data/changelog.js`. Toda entrega que vai ao ar sobe a versão ali (e em `backend/package.json`). O `deploy.sh` confere se a versão no ar é a mesma do código.
 
-## 6. Deploy
+## 7. Deploy
 Na VPS (`187.77.254.121`), em `/opt/apps/academiamilla`:
 ```bash
 bash deploy.sh
@@ -37,5 +43,5 @@ bash deploy.sh
 Faz `git pull`, rebuild de `api` e `web` e confere: API + banco respondendo e versão do frontend no ar. **Só avise o cliente depois do ✅ final.**
 A VPS acessa o Git por deploy key somente leitura (`git@github-academiamilla:sanderson-auler/academiamilla.git`).
 
-## 7. Infraestrutura
+## 8. Infraestrutura
 Roteiro completo de implantação, scripts e logs: OneDrive `SCA_Consultoria\Grupo Milla\VPS\Desenvolvimento\academia-milla`.
