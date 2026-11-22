@@ -1,10 +1,10 @@
 // Academia Milla 360 — API
-// Esqueleto técnico: sobe o servidor, conecta no PostgreSQL e expõe a rota de saúde.
 require('dotenv').config();
 const express = require('express');
 const helmet = require('helmet');
 const cors = require('cors');
 const { pool } = require('./db');
+const { migrar } = require('./migrar');
 const pkg = require('./package.json');
 
 const app = express();
@@ -31,12 +31,17 @@ app.get('/api/saude', async (req, res) => {
   }
 });
 
+app.use('/api/auth', require('./routes/auth'));
+app.use('/api/admin/config', require('./routes/admin-config'));
+
 app.use('/api', (req, res) => res.status(404).json({ erro: 'Rota não encontrada' }));
 
 app.use((err, req, res, next) => {
   console.error('[erro]', err);
-  res.status(500).json({ erro: 'Erro interno' });
+  res.status(500).json({ erro: 'Erro interno. Tente novamente.' });
 });
 
 const porta = Number(process.env.PORT) || 3000;
-app.listen(porta, () => console.log(`Academia Milla 360 API ${pkg.version} na porta ${porta}`));
+migrar()
+  .then(() => app.listen(porta, () => console.log(`Academia Milla 360 API ${pkg.version} na porta ${porta}`)))
+  .catch(e => { console.error('[boot]', e.message); process.exit(1); });
