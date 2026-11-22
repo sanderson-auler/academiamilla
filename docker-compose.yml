@@ -1,0 +1,36 @@
+# Academia Milla 360 — containers da aplicação.
+# Nenhuma porta é publicada no servidor: o acesso externo passa SOMENTE pelo
+# Nginx Proxy Manager, que alcança os containers pelo nome na rede "proxy".
+#   app.academiamilla.tech -> academiamilla-web:80
+#   api.academiamilla.tech -> academiamilla-api:3000
+# O PostgreSQL (container "postgres") já está na mesma rede.
+services:
+  api:
+    build: ./backend
+    image: academiamilla-api
+    container_name: academiamilla-api
+    restart: unless-stopped
+    env_file: ./backend/.env
+    environment:
+      TZ: America/Sao_Paulo
+    networks: [proxy]
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000/api/saude"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  web:
+    build:
+      context: ./frontend
+      args:
+        VITE_API_URL: ${VITE_API_URL:-https://api.academiamilla.tech/api}
+    image: academiamilla-web
+    container_name: academiamilla-web
+    restart: unless-stopped
+    networks: [proxy]
+    depends_on: [api]
+
+networks:
+  proxy:
+    external: true

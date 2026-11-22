@@ -1,0 +1,23 @@
+:root {
+  --petroleo: #0B3D4D; --royal: #1D4ED8; --vermelho: #C8102E; --dourado: #E0A82E; --verde: #1F9D6B;
+  --tinta: #0F1B22; --mudo: #5B6B73; --linha: #E4E9ED; --fundo: #F4F7F9;
+}
+* { box-sizing: border-box; }
+body { margin: 0; font-family: "Segoe UI", system-ui, -apple-system, Roboto, Arial, sans-serif; background: var(--fundo); color: var(--tinta); }
+main { min-height: 100vh; display: flex; flex-direction: column; }
+.faixa { background: var(--petroleo); color: #fff; padding: 56px max(5vw, 16px) 48px; }
+.marca { width: 48px; height: 48px; border-radius: 12px; background: #fff; color: var(--petroleo); display: grid; place-items: center; font-weight: 900; font-size: 20px; }
+.faixa h1 { font-size: clamp(30px, 5vw, 46px); margin: 18px 0 6px; letter-spacing: -0.5px; }
+.faixa p { margin: 0; color: #cde0e7; font-size: 17px; }
+.selo { display: inline-block; margin-top: 18px; background: var(--vermelho); padding: 6px 14px; border-radius: 999px; font-size: 14px; font-weight: 600; }
+.painel { background: #fff; border: 1px solid var(--linha); border-radius: 14px; margin: -24px auto 32px; width: min(640px, calc(100% - 32px)); padding: 22px 24px; box-shadow: 0 10px 30px rgba(11, 61, 77, .08); }
+.painel h2 { margin: 0 0 8px; font-size: 18px; }
+.item { display: flex; gap: 14px; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--linha); }
+.item:last-of-type { border-bottom: 0; }
+.ponto { width: 12px; height: 12px; border-radius: 50%; background: var(--dourado); flex: none; }
+.ponto.ok { background: var(--verde); }
+.ponto.falha { background: var(--vermelho); }
+.rotulo { font-size: 13px; color: var(--mudo); }
+.valor { font-size: 16px; font-weight: 600; }
+.hora { margin: 14px 0 0; font-size: 13px; color: var(--mudo); }
+footer { margin-top: auto; text-align: center; padding: 20px; font-size: 13px; color: var(--mudo); }
