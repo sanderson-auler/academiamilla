@@ -2,6 +2,19 @@
 // O deploy.sh lê a versão daqui e confere se é a mesma que está no ar.
 export const CHANGELOG = [
   {
+    versao: "0.5.0",
+    data: "2026-11-23",
+    itens: [
+      "Universidade: cadastro de cursos com descrição, carga horária, ativação e ligação a várias áreas — o mesmo curso aparece nos Treinamentos de cada área marcada.",
+      "Vídeos por curso: envio de arquivo (armazenamento privado R2, até 1 GB) ou link (YouTube, MP4, Vimeo, Drive), com ordem da trilha.",
+      "Controle de conclusão: o vídeo só conta quando é assistido até o fim; início, posição, tempo assistido e conclusão ficam registrados.",
+      "Prova de múltipla escolha com gabarito, nota mínima e número de tentativas; liberada após todos os vídeos e corrigida no servidor.",
+      "Certificado automático: só vídeos → ao concluir todos; vídeos e prova → após a aprovação. Modelo assinado da área (PNG/JPG) com o nome do colaborador, ou modelo padrão; download em PNG e impressão em PDF, com código de validação.",
+      "Treinamentos da área com cards de % concluído, vídeos em andamento e concluídos, e Meus certificados.",
+      "Acompanhamento por curso: quem começou, cada vídeo (início e fim), cada tentativa de prova (início, fim, nota) e o certificado emitido.",
+    ],
+  },
+  {
     versao: "0.4.0",
     data: "2026-11-23",
     itens: [

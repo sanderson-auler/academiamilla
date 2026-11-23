@@ -4,6 +4,7 @@ import { S, api, esc, ic, iniciais, montarMenu, go, recarregarBase, atualizarRod
 import './telas-areas.js';
 import './telas-gerais.js';
 import './telas-config.js';
+import './telas-univ.js';
 
 export const CASCA = `
 <div id="app">
