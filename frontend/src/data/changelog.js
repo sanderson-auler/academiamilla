@@ -2,6 +2,13 @@
 // O deploy.sh lê a versão daqui e confere se é a mesma que está no ar.
 export const CHANGELOG = [
   {
+    versao: "0.8.1",
+    data: "2026-11-23",
+    itens: [
+      "Configurar IA: abaixo de \"Salvar chave\", link direto para a página de chaves do provedor escolhido e passo a passo curto para criar a chave.",
+    ],
+  },
+  {
     versao: "0.8.0",
     data: "2026-11-23",
     itens: [

@@ -10,6 +10,7 @@ import './kanban-dnd.js';
 import './areas-admin.js';
 import './telas-comite.js';
 import './checklists-edit.js';
+import './chave-ajuda.js';
 
 export const CASCA = `
 <div id="app">
