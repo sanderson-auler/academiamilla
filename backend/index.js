@@ -43,6 +43,8 @@ app.use('/api/ia', require('./routes/ia'));
 app.use('/api/univ', require('./routes/universidade'));
 app.use('/api/cadastro-areas', require('./routes/areas'));
 app.use('/api/comite-gestao', require('./routes/comite'));
+app.use('/api/checklists-gestao', require('./routes/checklists'));
+app.use('/api', require('./routes/checklists').leitura);
 app.use('/api', require('./routes/operacao'));
 
 app.use('/api', (req, res) => res.status(404).json({ erro: 'Rota não encontrada' }));

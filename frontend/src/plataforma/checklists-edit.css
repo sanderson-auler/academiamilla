@@ -1,0 +1,7 @@
+/* 0.8.0 · editor de checklist */
+.cke-sec{border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:12px;background:#FBFCFD}
+.cke-sech{display:flex;align-items:center;gap:10px}.cke-sech b{white-space:nowrap;color:var(--petrol,#0E4A5C)}.cke-sech .inp{flex:1;font-weight:700}
+.cke-bts{display:flex;gap:4px;white-space:nowrap}
+.cke-meta{display:flex;gap:10px;margin:10px 0;flex-wrap:wrap}.cke-meta label{display:flex;flex-direction:column;font-size:11px;font-weight:700;color:var(--muted);flex:1;min-width:120px;gap:4px}.cke-meta label:first-child{flex:0 0 80px;min-width:80px}
+.cke-item{display:flex;align-items:center;gap:6px;margin-top:6px}.cke-item .n{width:22px;text-align:right;font-size:11px;color:var(--muted)}.cke-item .inp{flex:1}
+.btn.sm{padding:5px 10px;font-size:12px}.btn[disabled]{opacity:.35;pointer-events:none}
