@@ -2,6 +2,14 @@
 // O deploy.sh lê a versão daqui e confere se é a mesma que está no ar.
 export const CHANGELOG = [
   {
+    versao: "0.5.1",
+    data: "2026-11-23",
+    itens: [
+      "Plano de Ação: arrastar e soltar os cartões entre as colunas do Kanban para mudar o status (com pontos quando a ação é concluída no prazo).",
+      "Logos oficiais das marcas (Milla, Milla Casa, Dáhlia e Dom Cortez) em Áreas → Marcas do grupo e no seletor de marcas do Calendário.",
+    ],
+  },
+  {
     versao: "0.5.0",
     data: "2026-11-23",
     itens: [
