@@ -2,6 +2,17 @@
 // O deploy.sh lê a versão daqui e confere se é a mesma que está no ar.
 export const CHANGELOG = [
   {
+    versao: "0.6.0",
+    data: "2026-11-23",
+    itens: [
+      "Cadastro de áreas (Áreas → Gerenciar áreas): criar área nova com nome, responsável, cargo, frase do card, papel, cor e ícone — com pré-visualização do card.",
+      "Ativar e desativar área: a área inativa some do menu, das telas, da busca e do Dashboard Executivo, sem apagar nada; ao reativar, tudo volta como estava.",
+      "Funcionalidades por área: escolher quais abas aparecem (Visão Geral, Indicadores, Metas, Plano de Ação, Checklists, Treinamentos, Rotina, Guia, Assistente IA) e quais informações aparecem no card.",
+      "Ordem das áreas definida no cadastro; toda área nova já nasce com o seu Assistente IA.",
+      "Cursos ligados a várias áreas passam a contar em todas elas nos cards e no painel.",
+    ],
+  },
+  {
     versao: "0.5.1",
     data: "2026-11-23",
     itens: [
