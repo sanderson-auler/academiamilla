@@ -8,6 +8,7 @@ import './telas-univ.js';
 import './marcas.js';
 import './kanban-dnd.js';
 import './areas-admin.js';
+import './telas-comite.js';
 
 export const CASCA = `
 <div id="app">

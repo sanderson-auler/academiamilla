@@ -2,6 +2,17 @@
 // O deploy.sh lê a versão daqui e confere se é a mesma que está no ar.
 export const CHANGELOG = [
   {
+    versao: "0.7.0",
+    data: "2026-11-23",
+    itens: [
+      "Comitê Comercial com calendário mensal das reuniões, histórico de atas e pendências em aberto.",
+      "Indicadores do comitê: reuniões realizadas no mês, ações definidas e encaminhadas, ações resolvidas, % resolvidas no prazo, ações vencidas e tempo médio de resolução.",
+      "Reunião completa: dados da reunião (condução, registro, participantes, ausências, pauta) e transcrição colada, enviada em arquivo (.txt, .vtt, .docx, .pdf) ou em áudio (transcrito por IA).",
+      "Ata gerada por IA no modelo executivo do comitê (resumo por tema, diretrizes registradas, revisão de pendências e ações definidas), editável e exportada em PDF.",
+      "Plano de ação em checklist: cada ação com área, responsável, início e término; encaminhamento ao Kanban da área, com a situação voltando automaticamente para o comitê.",
+    ],
+  },
+  {
     versao: "0.6.0",
     data: "2026-11-23",
     itens: [
