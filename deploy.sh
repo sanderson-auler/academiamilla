@@ -12,6 +12,13 @@ cd "$RAIZ"
 ETAPA="pré-checagem"
 [ -f backend/.env ] || { echo -e "${R}❌ backend/.env não encontrado. Rode a instalação (opção 11) ou copie de backend/.env.example.${N}"; exit 1; }
 
+ETAPA="backup pré-deploy"
+# Ambiente único (produção): guarda o banco antes de qualquer atualização.
+if [ -x /usr/local/bin/antes-do-deploy.sh ]; then
+  echo -e "${Y}💾 Backup do banco antes de atualizar...${N}"
+  /usr/local/bin/antes-do-deploy.sh
+fi
+
 ETAPA="git pull"
 echo -e "${Y}🔄 Atualizando o código (git pull)...${N}"
 git pull --ff-only
