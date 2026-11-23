@@ -98,7 +98,7 @@ r.get('/checklists/aplicacoes', pode('areas', 1), async (req, res) => {
   const p = []; let w = '';
   if (req.query.area) { p.push(req.query.area); w = 'WHERE ap.area_id = $1'; }
   const { rows } = await pool.query(
-    `SELECT ap.id, ap.modelo_id, m.nome AS modelo, ap.area_id, l.nome AS loja, ap.score, ap.qtd_ok, ap.qtd_atencao, ap.qtd_nc, ap.criado_em, u.nome AS usuario
+    `SELECT ap.id, ap.modelo_id, m.nome AS modelo, ap.area_id, l.nome AS loja, ap.score, ap.indice_ponderado, ap.classificacao, ap.cabecalho, ap.qtd_ok, ap.qtd_atencao, ap.qtd_nc, ap.criado_em, u.nome AS usuario
        FROM checklist_aplicacoes ap JOIN checklist_modelos m ON m.id = ap.modelo_id
        LEFT JOIN lojas l ON l.id = ap.loja_id LEFT JOIN usuarios u ON u.id = ap.usuario_id
        ${w} ORDER BY ap.criado_em DESC LIMIT 30`, p);
@@ -107,12 +107,27 @@ r.get('/checklists/aplicacoes', pode('areas', 1), async (req, res) => {
 
 r.get('/checklists/aplicacoes/:id', pode('areas', 1), async (req, res) => {
   const { rows } = await pool.query(
-    `SELECT ap.*, m.nome AS modelo, m.itens, l.nome AS loja, u.nome AS usuario FROM checklist_aplicacoes ap
+    `SELECT ap.*, m.nome AS modelo, m.itens, m.estrutura, l.nome AS loja, u.nome AS usuario FROM checklist_aplicacoes ap
        JOIN checklist_modelos m ON m.id = ap.modelo_id LEFT JOIN lojas l ON l.id = ap.loja_id LEFT JOIN usuarios u ON u.id = ap.usuario_id
       WHERE ap.id = $1`, [req.params.id]);
   if (!rows[0]) return res.status(404).json({ erro: 'Checklist não encontrado.' });
   res.json(rows[0]);
 });
+
+// Classificação e prazos do guia de supervisão: Destaque ≥ 85 · Estável 70–84 · Atenção 50–69 · Prioridade alta < 50.
+const classe = v => (v == null ? null : v >= 85 ? 'Destaque' : v >= 70 ? 'Estável' : v >= 50 ? 'Atenção' : 'Prioridade alta');
+function avaliar(estrutura, norm) {
+  // Índice por bloco e ponderado (peso 1 a 3 pelo impacto comercial).
+  let i = 0; const blocos = [];
+  for (const b of estrutura.blocos) {
+    const rs = norm.slice(i, i + b.itens.length); i += b.itens.length;
+    const ok = rs.filter(x => x.s === 'ok').length, w = rs.filter(x => x.s === 'warn').length, av = rs.filter(x => x.s).length;
+    blocos.push({ ...b, indice: av ? ((ok + w * 0.5) / av) * 100 : null });
+  }
+  const val = blocos.filter(b => b.indice != null);
+  const pond = val.length ? val.reduce((s, b) => s + b.indice * (b.peso || 1), 0) / val.reduce((s, b) => s + (b.peso || 1), 0) : null;
+  return { blocos, pond: pond == null ? null : Math.round(pond) };
+}
 
 r.post('/checklists/aplicacoes', pode('check', 1), async (req, res) => {
   const b = req.body || {};
@@ -120,28 +135,61 @@ r.post('/checklists/aplicacoes', pode('check', 1), async (req, res) => {
   if (!m) return res.status(400).json({ erro: 'Checklist inválido.' });
   const resp = Array.isArray(b.respostas) ? b.respostas.slice(0, m.itens.length) : [];
   if (resp.length !== m.itens.length) return res.status(400).json({ erro: 'Respostas incompletas.' });
-  const norm = resp.map(x => ({ s: ['ok', 'warn', 'no'].includes(x?.s) ? x.s : '', obs: txt(x?.obs, 300) }));
-  if (norm.some(x => !x.s)) return res.status(400).json({ erro: 'Marque todos os itens (OK, Atenção ou Não conforme) antes de salvar.' });
+  const norm = resp.map(x => ({ s: ['ok', 'warn', 'no'].includes(x?.s) ? x.s : '', obs: txt(x?.obs, 2000) }));
+  const est = m.estrutura;
+  if (!est && norm.some(x => !x.s)) return res.status(400).json({ erro: 'Marque todos os itens (OK, Atenção ou Não conforme) antes de salvar.' });
+  const avaliados = norm.filter(x => x.s);
+  if (!avaliados.length) return res.status(400).json({ erro: 'Marque pelo menos um item antes de salvar.' });
   const ok = norm.filter(x => x.s === 'ok').length, w = norm.filter(x => x.s === 'warn').length, no = norm.filter(x => x.s === 'no').length;
-  const score = Math.round(((ok + w * 0.5) / norm.length) * 100);
+  // Itens sem marcação ficam fora do cálculo (cobertura parcial).
+  const score = Math.round(((ok + w * 0.5) / avaliados.length) * 100);
   const loja = b.loja_id ? Number(b.loja_id) : null;
+  const cab = {};
+  if (est?.cabecalho) for (const [k] of est.cabecalho) if (b.cabecalho?.[k]) cab[k] = txt(b.cabecalho[k], 150);
+  const av = est ? avaliar(est, norm) : null;
   const { rows } = await pool.query(
-    `INSERT INTO checklist_aplicacoes (modelo_id, area_id, loja_id, marca, usuario_id, respostas, score, qtd_ok, qtd_atencao, qtd_nc, observacao)
-     VALUES ($1,$2,$3,(SELECT marca FROM lojas WHERE id = $3),$4,$5,$6,$7,$8,$9,$10) RETURNING id, score`,
-    [m.id, m.area_id, loja, req.usuario.sub, JSON.stringify(norm), score, ok, w, no, txt(b.observacao, 1000) || null]);
+    `INSERT INTO checklist_aplicacoes (modelo_id, area_id, loja_id, marca, usuario_id, respostas, score, qtd_ok, qtd_atencao, qtd_nc, observacao, cabecalho, indice_ponderado, classificacao)
+     VALUES ($1,$2,$3,(SELECT marca FROM lojas WHERE id = $3),$4,$5,$6,$7,$8,$9,$10,$11,$12,$13) RETURNING id, score`,
+    [m.id, m.area_id, loja, req.usuario.sub, JSON.stringify(norm), score, ok, w, no, txt(b.observacao, 2000) || null,
+     est ? JSON.stringify(cab) : null, av?.pond ?? null, est ? classe(score) : null]);
+  const apId = rows[0].id;
   let pontos = REGRAS.checklist;
-  await creditar(req.usuario.sub, REGRAS.checklist, `Checklist aplicado: ${m.nome}`, `chk:${rows[0].id}`);
-  if (score >= 90) { pontos += REGRAS.checklist_bonus; await creditar(req.usuario.sub, REGRAS.checklist_bonus, 'Checklist com score ≥ 90%', `chk:${rows[0].id}`); }
-  // Itens não conformes viram ação no plano da área.
-  const ncs = norm.map((x, i) => ({ ...x, item: m.itens[i] })).filter(x => x.s === 'no');
-  for (const n of ncs) {
-    await pool.query(
-      `INSERT INTO acoes (area_id, titulo, descricao, status, prioridade, marca, responsavel, prazo, origem, criado_por)
-       VALUES ($1,$2,$3,'A fazer','Alta',(SELECT marca FROM lojas WHERE id = $4),$5,CURRENT_DATE + 2,$6,$7)`,
-      [m.area_id, `Corrigir: ${n.item}`.slice(0, 200), n.obs || `Não conformidade apontada no checklist "${m.nome}".`, loja,
-       await nomeUsuario(req.usuario.sub), `Checklist #${rows[0].id}`, req.usuario.sub]);
+  await creditar(req.usuario.sub, REGRAS.checklist, `Checklist aplicado: ${m.nome}`, `chk:${apId}`);
+  if (score >= 90 && avaliados.length === norm.length) { pontos += REGRAS.checklist_bonus; await creditar(req.usuario.sub, REGRAS.checklist_bonus, 'Checklist com score ≥ 90%', `chk:${apId}`); }
+  const autor = await nomeUsuario(req.usuario.sub);
+  const ref = cab.loja || cab.concorrente || '';
+  let geradas = 0;
+  if (!est) {
+    // Checklist simples: itens não conformes viram ação no plano da área.
+    for (const [i, x] of norm.entries()) {
+      if (x.s !== 'no') continue;
+      await pool.query(
+        `INSERT INTO acoes (area_id, titulo, descricao, status, prioridade, marca, responsavel, prazo, origem, criado_por)
+         VALUES ($1,$2,$3,'A fazer','Alta',(SELECT marca FROM lojas WHERE id = $4),$5,CURRENT_DATE + 2,$6,$7)`,
+        [m.area_id, `Corrigir: ${m.itens[i]}`.slice(0, 200), x.obs || `Não conformidade apontada no checklist "${m.nome}".`, loja, autor, `Checklist #${apId}`, req.usuario.sub]);
+      geradas++;
+    }
+  } else {
+    // Checklist do guia: Não em bloco de peso 3 → 48 h · demais Não → 7 dias · Atenção → 15 dias (comparativo: concorrente acima → 15 dias).
+    let i = 0;
+    for (const bl of est.blocos) {
+      for (const item of bl.itens) {
+        const x = norm[i++];
+        const gera = est.escala === 'comparativa' ? x.s === 'no' : (x.s === 'no' || x.s === 'warn');
+        if (!gera) continue;
+        const dias = est.escala === 'comparativa' ? 15 : x.s === 'no' ? ((bl.peso || 1) >= 3 ? 2 : 7) : 15;
+        const titulo = est.escala === 'comparativa' ? `Concorrência acima: ${item}` : `${x.s === 'no' ? 'Corrigir' : 'Ajustar'}: ${item}`;
+        const desc = [bl.acao, x.obs ? `Observação da visita: ${x.obs}` : '', ref ? `Referência: ${ref}` : '', `Área sugerida: ${bl.area}`].filter(Boolean).join('\n');
+        await pool.query(
+          `INSERT INTO acoes (area_id, titulo, descricao, status, prioridade, marca, responsavel, prazo, origem, criado_por)
+           VALUES ($1,$2,$3,'A fazer',$4,(SELECT marca FROM lojas WHERE id = $5),$6,CURRENT_DATE + $7::int,$8,$9)`,
+          [m.area_id, titulo.slice(0, 200), desc, x.s === 'no' && est.escala !== 'comparativa' ? 'Alta' : 'Média', loja,
+           cab.responsavel || autor, dias, `${m.nome} #${apId} · ${bl.nome}`.slice(0, 200), req.usuario.sub]);
+        geradas++;
+      }
+    }
   }
-  res.status(201).json({ id: rows[0].id, score, pontosGanhos: pontos, acoesGeradas: ncs.length });
+  res.status(201).json({ id: apId, score, ponderado: av?.pond ?? null, classificacao: est ? classe(score) : null, pontosGanhos: pontos, acoesGeradas: geradas });
 });
 
 r.post('/checklists/modelos', pode('check', 2), async (req, res) => {
