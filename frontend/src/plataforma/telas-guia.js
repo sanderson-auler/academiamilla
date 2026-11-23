@@ -19,14 +19,14 @@ const COR_S = { ok: 'green', warn: 'amber', no: 'red', '': 'gray' };
 export function rotinaGuiaHTML(id, a) {
   let h = '';
   if (a.rotina_loja) {
-    h += `<div class="card p" style="margin-bottom:18px"><div class="sect-title">Rotina diária na loja — da abertura ao fechamento</div><div class="sect-sub">O que a supervisão acompanha (e cobra) em toda visita à loja</div>
+    h += `<div class="card p" style="margin-bottom:18px"><div class="sect-title">${esc(a.rotina_titulo || 'Rotina diária na loja — da abertura ao fechamento')}</div><div class="sect-sub">${esc(a.rotina_sub || 'O que a supervisão acompanha (e cobra) em toda visita à loja')}</div>
     <div class="guia-timeline">${a.rotina_loja.map(t => `<div class="guia-tcard"><div class="tt">${esc(t[0])}</div><h4>${esc(t[1])}</h4><ul>${t[2].map(x => `<li>${esc(x)}</li>`).join('')}</ul></div>`).join('')}</div></div>`;
   }
   if (a.programacao) {
     const sem = a.programacao.semanas;
     const wi = Math.min(S.progSemana || 0, sem.length - 1);
     const w = sem[wi];
-    h += `<div class="card p" style="margin-bottom:18px"><div class="sect-title">Programação mensal — a semana da supervisão</div><div class="sect-sub">Cada semana tem um foco. Clique num dia para abrir a rotina detalhada, até o pacote de trabalho.</div>
+    h += `<div class="card p" style="margin-bottom:18px"><div class="sect-title">${esc(a.prog_titulo || 'Programação mensal — a semana da supervisão')}</div><div class="sect-sub">Cada semana tem um foco. Clique num dia para abrir a rotina detalhada, até o pacote de trabalho.</div>
     <div class="segmented" style="margin:12px 0;flex-wrap:wrap">${sem.map((s, i) => `<button class="${i === wi ? 'on' : ''}" onclick="progSemana('${id}',${i})">${esc(s.n)} · ${esc(s.foco)}</button>`).join('')}</div>
     <div class="guia-obj"><b>Objetivo da semana:</b> ${esc(w.obj || '—')}</div>
     <div class="guia-days">${w.dias.map((d, di) => { const tk = d.tasks || []; return `<div class="guia-day ${tk.length ? 'clk' : ''}" ${tk.length ? `onclick="progDia('${id}',${wi},${di})"` : ''}>
@@ -49,7 +49,7 @@ function progDia(id, wi, di) {
 // ---------- Roteiro de conversa (aba Guia) ----------
 export function conversaHTML(a) {
   if (!a.conversa) return '';
-  return `<div class="card p" style="margin-top:18px"><div class="sect-title">Como conduzir a conversa com o gerente</div><div class="sect-sub">Roteiro de perguntas-chave por bloco. Ouça mais do que fale — e encerre com dono e prazo.</div>
+  return `<div class="card p" style="margin-top:18px"><div class="sect-title">${esc(a.conversa_titulo || 'Como conduzir a conversa com o gerente')}</div><div class="sect-sub">Roteiro de perguntas-chave por bloco. Ouça mais do que fale — e encerre com dono e prazo.</div>
   <div class="grid cards-2" style="margin-top:8px">${a.conversa.map(b => `<div class="guia-q"><h4><span>${esc(b[1])}</span>${esc(b[0])}</h4><ul>${b[2].map(q => `<li>${esc(q)}</li>`).join('')}</ul></div>`).join('')}</div></div>`;
 }
 
@@ -126,7 +126,7 @@ async function salvarChecklistGuia() {
   fecharModal();
   pontosToast(r, `Visita salva · ${r.score}%${r.classificacao ? ' · ' + r.classificacao : ''}${r.acoesGeradas ? ` · ${r.acoesGeradas} ação(ões) no plano` : ''}`);
   await recarregarBase(); window.renderAreaTabAtual?.();
-  verAplicacaoGuia(r.id);
+  window.verAplicacaoGuia(r.id);
 }
 
 // ---------- Relatório da visita ----------
