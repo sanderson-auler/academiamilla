@@ -21,7 +21,7 @@ ${head('Áreas do Grupo Milla', 'Cada área tem metas, indicadores, plano de aç
 </div>`;
 
 // ---------- Workspace ----------
-const ABAS = [['visao', 'Visão Geral'], ['kpis', 'Indicadores'], ['metas', 'Metas'], ['acao', 'Plano de Ação'], ['check', 'Checklists'], ['treino', 'Treinamentos'], ['rotina', 'Rotina & Atividades'], ['guia', 'Guia'], ['ia', '✨ Assistente IA']];
+const ABAS = [['visao', 'Visão Geral'], ['kpis', 'Indicadores'], ['metas', 'Metas'], ['acao', 'Plano de Ação'], ['check', 'Checklists'], ['treino', 'Treinamentos'], ['rotina', 'Rotina & Atividades'], ['guia', 'Guia'], ['ia', '✨ Assistente IA'], ['arquivos', '📎 Arquivos']];
 
 function openArea(id, aba) {
   destruirGraficos();
@@ -259,7 +259,7 @@ async function concluirTask(tid) {
 async function comentarTask(tid) {
   const texto = val('tCom'); if (!texto.trim()) return;
   await chamar(() => api(`/acoes/${tid}/comentarios`, { metodo: 'POST', corpo: { texto } }));
-  openTask(tid);
+  window.openTask(tid);
 }
 
 // --- Checklists ---

@@ -2,7 +2,7 @@
 // Também aplica, nas telas já existentes, as abas e chips configurados por área.
 import { S, api, esc, ic, head, toast, chamar, abrirModal, fecharModal, go, trilha, marcarAtivo, recarregarBase, montarMenu, dataHoraBR, pode } from './nucleo.js';
 
-const NOMES_ABAS = { visao: 'Visão Geral', kpis: 'Indicadores', metas: 'Metas', acao: 'Plano de Ação', check: 'Checklists', treino: 'Treinamentos', rotina: 'Rotina & Atividades', guia: 'Guia', ia: 'Assistente IA' };
+const NOMES_ABAS = { visao: 'Visão Geral', kpis: 'Indicadores', metas: 'Metas', acao: 'Plano de Ação', check: 'Checklists', treino: 'Treinamentos', rotina: 'Rotina & Atividades', guia: 'Guia', ia: 'Assistente IA', arquivos: 'Arquivos' };
 const NOMES_CHIPS = { metas: 'Metas por marca', kpis: 'Nº de indicadores', check: 'Nº de checklists', cursos: 'Nº de cursos' };
 const TODAS_ABAS = Object.keys(NOMES_ABAS), TODOS_CHIPS = Object.keys(NOMES_CHIPS);
 const abasDe = a => (Array.isArray(a?.abas) && a.abas.length ? a.abas : TODAS_ABAS);
