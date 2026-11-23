@@ -11,6 +11,7 @@ import './areas-admin.js';
 import './telas-comite.js';
 import './checklists-edit.js';
 import './chave-ajuda.js';
+import './arquivos.js';
 
 export const CASCA = `
 <div id="app">

@@ -2,6 +2,17 @@
 // O deploy.sh lê a versão daqui e confere se é a mesma que está no ar.
 export const CHANGELOG = [
   {
+    versao: "0.9.0",
+    data: "2026-11-23",
+    itens: [
+      "Anexos nas atividades do Plano de Ação: imagem, vídeo, áudio, PDF, Word, Excel e PowerPoint (até 500 MB cada), vários de uma vez ou arrastando para o quadro, com barra de progresso.",
+      "Anexos também nos checklists salvos (evidências da visita) e nas reuniões do Comitê.",
+      "Nova aba Arquivos em cada área: tudo o que foi anexado no Plano de Ação, Checklists, Comitê, direto na área, nos vídeos dos cursos e na base da IA — com origem (clicável), quem incluiu, data e hora de inclusão e de alteração.",
+      "Na aba Arquivos: envio direto, filtros por origem e tipo, busca, totais por tipo e espaço usado; visualizar (imagem, vídeo, áudio e PDF na própria tela), baixar, renomear/descrever e excluir.",
+      "Exclusão sem perda: o arquivo sai das listas mas fica guardado e pode ser restaurado pela administração.",
+    ],
+  },
+  {
     versao: "0.8.1",
     data: "2026-11-23",
     itens: [
