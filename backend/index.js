@@ -44,6 +44,7 @@ app.use('/api/univ', require('./routes/universidade'));
 app.use('/api/cadastro-areas', require('./routes/areas'));
 app.use('/api/comite-gestao', require('./routes/comite'));
 app.use('/api/checklists-gestao', require('./routes/checklists'));
+app.use('/api/arquivos', require('./routes/arquivos'));
 app.use('/api', require('./routes/checklists').leitura);
 app.use('/api', require('./routes/operacao'));
 

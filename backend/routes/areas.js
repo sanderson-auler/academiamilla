@@ -8,7 +8,7 @@ const { permissoesDe } = require('../lib/rbac');
 const r = Router();
 r.use(exigirLogin);
 
-const ABAS = ['visao', 'kpis', 'metas', 'acao', 'check', 'treino', 'rotina', 'guia', 'ia'];
+const ABAS = ['visao', 'kpis', 'metas', 'acao', 'check', 'treino', 'rotina', 'guia', 'ia', 'arquivos'];
 const CHIPS = ['metas', 'kpis', 'check', 'cursos'];
 const ICONES = ['users', 'check', 'layers', 'spark', 'cart', 'card', 'chart', 'cap', 'book', 'medal', 'cal', 'kanban', 'grid', 'home', 'gear'];
 const txt = (v, max = 300) => String(v ?? '').trim().slice(0, max);
