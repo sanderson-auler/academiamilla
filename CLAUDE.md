@@ -46,6 +46,17 @@ Projeto **novo e isolado**. Não compartilha servidor, banco, storage nem Git co
 - **Aprendizado:** `ia_aprendizados` (correcao, validada, revisao, lacuna, faq, instrucao) com status pendente/aprovado/rejeitado. Aprovados entram no prompt com prioridade sobre as fontes. `aprendizado_auto` aprova correções e validações sem revisão.
 - **RBAC:** módulo `ia` (1 usa · 2 configura qualquer agente e cadastra chaves). O usuário com `area_id` configura o agente da própria área.
 
+## 5.3 Universidade (0.5.0)
+- **Rotas:** `routes/universidade.js` (`/api/univ`, JSON até 12 MB). Tela `frontend/src/plataforma/telas-univ.js` (+ `univ.css`), importada em `iniciar.js`; substitui `S.telas.univ`, `S.abasArea.treino`, `openCourse` e `meusCertificados`.
+- **Dados:** `curso_areas` (curso ↔ N áreas; `cursos.area_id` fica como área principal), `curso_videos` (`tipo` arquivo|youtube|link; arquivo no R2 em `univ/curso-<id>/…`, tocado por URL assinada de 6 h), `curso_video_progresso` (início, posição, tempo assistido, conclusão), `curso_tentativas` (início, fim, respostas, acertos, nota, aprovado), `curso_certificados` (código único por usuário+curso). Prova e gabarito em `cursos.prova` (o gabarito nunca vai ao aluno); modelo do certificado em `cursos.cert_modelo` (bytea) + `cert_config` (posição/tamanho/cor do nome e da linha de informações, em %).
+- **Regras:** vídeo concluído no evento de fim do player ou ≥ 90% assistido (links sem evento de fim: botão liberado após 90% da duração). Prova liberada após todos os vídeos, até `tentativas_max`. Curso concluído = todos os vídeos + (prova aprovada, se `exige_prova`) → pontos (`REGRAS.curso`) + certificado. Vídeo concluído dá `REGRAS.aula` uma vez (`pontos.ref = video:<id>`).
+- **Gestão:** CMS nível 2 gerencia todos os cursos; o responsável com `area_id` gerencia os cursos ligados à própria área. Upload de vídeo: corpo bruto (`Content-Type: video/*`) enviado em streaming ao R2 (`@aws-sdk/lib-storage`).
+
+## 5.4 Cadastro de áreas (0.6.0)
+- **Rotas:** `routes/areas.js` (`/api/cadastro-areas`): listar, criar, editar, `PATCH /:id/ativo`, `PUT /ordem/salvar`. Perfil com `rbac` nível 2 faz tudo; o usuário com `area_id` edita só a identidade da própria área.
+- **Dados (migração 007):** `areas.ativo` (inativa = oculta em base, Executivo e busca; nada é apagado; não existe exclusão de área), `areas.abas` (abas visíveis do workspace), `areas.chips` (informações do card). Área nova recebe `conteudo` vazio e o seu `ia_agentes`.
+- **Tela:** `frontend/src/plataforma/areas-admin.js` (`go('areasAdm')`, botão "Gerenciar áreas" na tela Áreas). Envolve `openArea`/`switchAreaTab` para respeitar as abas visíveis. Outros módulos de apoio: `marcas.js` (logos das marcas) e `kanban-dnd.js` (arrastar e soltar no Kanban).
+
 ## 6. Versão e changelog
 Fonte da verdade: o **topo** de `frontend/src/data/changelog.js`. Toda entrega que vai ao ar sobe a versão ali (e em `backend/package.json`). O `deploy.sh` confere se a versão no ar é a mesma do código.
 
