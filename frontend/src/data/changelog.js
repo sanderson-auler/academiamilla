@@ -2,6 +2,18 @@
 // O deploy.sh lê a versão daqui e confere se é a mesma que está no ar.
 export const CHANGELOG = [
   {
+    versao: "0.8.0",
+    data: "2026-11-23",
+    itens: [
+      "Checklists editáveis: incluir, alterar, excluir e reordenar seções e itens (com peso, área responsável e ação sugerida por seção); criar e excluir checklists.",
+      "Checklists salvos na aba Checklists de cada área, com filtro por checklist e busca; cada um pode ser reaberto para edição.",
+      "Exportação para Excel (por checklist e da lista de salvos) e PDF no modelo do relatório de visita: cabeçalho e rodapé em todas as páginas, guia de leitura, leitura da aplicação, conformidade por seção, plano de ação e anexo, sem quebra no meio dos itens.",
+      "Mesmo modelo de checklist em todas as áreas, com as questões dos guias: Gerente Regional, Compras, CRM, Marketing e VM / PDV (BigPay convertido para o modelo).",
+      "Áreas equalizadas com os guias: ritmo do mês, programação semanal e roteiro de conversa de Gerente Regional, Compras, CRM, Marketing e VM / PDV.",
+      "Cada checklist salvo guarda a versão do modelo com que foi aplicado: editar o modelo não altera os relatórios já emitidos.",
+    ],
+  },
+  {
     versao: "0.7.0",
     data: "2026-11-23",
     itens: [
