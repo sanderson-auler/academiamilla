@@ -33,6 +33,9 @@ app.get('/api/saude', async (req, res) => {
 
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/admin/config', require('./routes/admin-config'));
+app.use('/api/plataforma', require('./routes/plataforma'));
+app.use('/api/gestao', require('./routes/usuarios').router);
+app.use('/api', require('./routes/operacao'));
 
 app.use('/api', (req, res) => res.status(404).json({ erro: 'Rota não encontrada' }));
 

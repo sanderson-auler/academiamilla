@@ -77,4 +77,28 @@ r.post('/primeiro-acesso', limitar, async (req, res) => {
   }
 });
 
+// ---------- Definição de senha por convite (usuários criados pela administração) ----------
+async function conviteUsuario(token) {
+  const { rows } = await pool.query(
+    `SELECT c.id, c.usuario_id, u.nome, u.email FROM convites_usuario c JOIN usuarios u ON u.id = c.usuario_id
+      WHERE c.token_hash = $1 AND c.usado_em IS NULL AND c.expira_em > now() AND u.ativo`, [sha256(token)]);
+  return rows[0] || null;
+}
+
+r.get('/convite/:token', async (req, res) => {
+  const c = await conviteUsuario(req.params.token);
+  res.json(c ? { valido: true, nome: c.nome, email: c.email } : { valido: false });
+});
+
+r.post('/convite', limitar, async (req, res) => {
+  const senha = String(req.body?.senha || '');
+  if (senha.length < 8) return res.status(400).json({ erro: 'A senha precisa ter pelo menos 8 caracteres.' });
+  const c = await conviteUsuario(req.body?.token);
+  if (!c) return res.status(400).json({ erro: 'Link inválido, expirado ou já utilizado. Peça um novo à administração.' });
+  await pool.query('UPDATE usuarios SET senha_hash = $2, demo = FALSE WHERE id = $1', [c.usuario_id, await hashSenha(senha)]);
+  await pool.query('UPDATE convites_usuario SET usado_em = now() WHERE id = $1', [c.id]);
+  const { rows } = await pool.query('SELECT * FROM usuarios WHERE id = $1', [c.usuario_id]);
+  res.json({ token: gerarToken(rows[0]), usuario: publico(rows[0]) });
+});
+
 module.exports = r;
