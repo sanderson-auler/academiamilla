@@ -1,6 +1,7 @@
 // Áreas: hub e workspace (visão, indicadores, metas, plano de ação, checklists, treinamentos, rotina, guia).
 import { S, api, esc, ic, iniciais, prog, head, kpiCard, abrirModal, fecharModal, toast, pontosToast, chamar, grafico, destruirGraficos,
   marcarAtivo, trilha, dataBR, dataCurta, hojeISO, pode, opcoes, val, recarregarBase, Chart } from './nucleo.js';
+import { rotinaGuiaHTML, conversaHTML } from './telas-guia.js';
 
 const AREA = id => S.D.areas[id];
 const MARCAS = () => S.D.marcas;
@@ -20,7 +21,7 @@ ${head('Áreas do Grupo Milla', 'Cada área tem metas, indicadores, plano de aç
 </div>`;
 
 // ---------- Workspace ----------
-const ABAS = [['visao', 'Visão Geral'], ['kpis', 'Indicadores'], ['metas', 'Metas'], ['acao', 'Plano de Ação'], ['check', 'Checklists'], ['treino', 'Treinamentos'], ['rotina', 'Rotina & Atividades'], ['guia', 'Guia']];
+const ABAS = [['visao', 'Visão Geral'], ['kpis', 'Indicadores'], ['metas', 'Metas'], ['acao', 'Plano de Ação'], ['check', 'Checklists'], ['treino', 'Treinamentos'], ['rotina', 'Rotina & Atividades'], ['guia', 'Guia'], ['ia', '✨ Assistente IA']];
 
 function openArea(id, aba) {
   destruirGraficos();
@@ -266,15 +267,16 @@ S.abasArea.check = async (id, a) => {
   const hist = await api(`/checklists/aplicacoes?area=${id}`);
   const media = hist.length ? Math.round(hist.reduce((s, h) => s + h.score, 0) / hist.length) : null;
   return `<div class="page-head" style="margin-bottom:14px"><div><h1 style="font-size:18px">Checklists · ${esc(a.nome)}</h1><p>Clique num checklist para aplicá-lo. Marque cada item (OK / Atenção / Não conforme) e veja o score ao vivo. Itens não conformes viram ação no plano.</p></div>${pode('check', 2) ? `<button class="btn red" onclick="novoChecklist('${id}')">+ Novo checklist</button>` : ''}</div>
-<div class="grid cards-2">${a.checklists.map((c, i) => `<div class="card p cl" onclick="openChecklist('${id}',${i})"><div class="between"><div class="ico" style="width:44px;height:44px;border-radius:12px;background:${a.grad};color:#fff;display:grid;place-items:center">${ic('check')}</div><span class="tag gray">${c[1].length} itens</span></div>
-<div class="sect-title" style="margin-top:12px">${esc(c[0])}</div><div class="mini" style="margin-bottom:8px">Toque para aplicar · gera score, pontos e ações</div><span class="tag green">Pronto para aplicar</span></div>`).join('')}</div>
+<div class="grid cards-2">${a.checklists.map((c, i) => `<div class="card p cl" onclick="openChecklist('${id}',${i})"><div class="between"><div class="ico" style="width:44px;height:44px;border-radius:12px;background:${a.grad};color:#fff;display:grid;place-items:center">${ic('check')}</div><span class="tag gray">${c[1].length} itens${c[3] ? ` · ${c[3].blocos.length} blocos` : ''}</span></div>
+<div class="sect-title" style="margin-top:12px">${esc(c[0])}</div><div class="mini" style="margin-bottom:8px">${c[3] ? (c[3].escala === 'comparativa' ? 'Concorrente acima, igual ou abaixo da Milla · gera oportunidades no plano' : 'Cabeçalho da visita, observação por item, índice ponderado e plano de ação') : 'Toque para aplicar · gera score, pontos e ações'}</div><span class="tag green">${c[3] ? 'Guia de supervisão' : 'Pronto para aplicar'}</span></div>`).join('')}</div>
 <div class="card p" style="margin-top:18px"><div class="between"><div><div class="sect-title">Aplicações recentes</div><div class="sect-sub">${hist.length ? `${hist.length} aplicações · score médio ${media}` : 'Nenhuma aplicação ainda'}</div></div></div>
 ${hist.length ? `<div style="overflow-x:auto"><table><thead><tr><th>Checklist</th><th>Loja</th><th>Aplicado por</th><th>Data</th><th>Resultado</th><th>Score</th></tr></thead><tbody>
-${hist.map(h => `<tr style="cursor:pointer" onclick="verAplicacao(${h.id})"><td><b>${esc(h.modelo)}</b></td><td>${esc(h.loja || '—')}</td><td>${esc(h.usuario || 'Carga inicial')}</td><td>${new Date(h.criado_em).toLocaleDateString('pt-BR')}</td><td class="mini">${h.qtd_ok} OK · ${h.qtd_atencao} atenção · ${h.qtd_nc} N/C</td><td><span class="tag ${h.score >= 80 ? 'green' : h.score >= 50 ? 'amber' : 'red'}">${h.score}</span></td></tr>`).join('')}
+${hist.map(h => `<tr style="cursor:pointer" onclick="verAplicacao(${h.id})"><td><b>${esc(h.modelo)}</b></td><td>${esc(h.loja || h.cabecalho?.loja || h.cabecalho?.concorrente || '—')}</td><td>${esc(h.usuario || 'Carga inicial')}</td><td>${new Date(h.criado_em).toLocaleDateString('pt-BR')}</td><td class="mini">${h.qtd_ok} OK · ${h.qtd_atencao} atenção · ${h.qtd_nc} N/C</td><td><span class="tag ${h.score >= 80 ? 'green' : h.score >= 50 ? 'amber' : 'red'}">${h.score}${h.classificacao ? '% · ' + esc(h.classificacao) : ''}</span></td></tr>`).join('')}
 </tbody></table></div>` : ''}</div>`;
 };
 function openChecklist(id, idx) {
   const a = AREA(id), c = a.checklists[idx];
+  if (c[3]) return window.openChecklistGuia(id, idx);
   const itens = c[1].map((t, i) => `<div class="chk" data-s="" onclick="cycleChk(this)"><div class="box" data-i="${i}"></div><div class="txt">${esc(t)}</div><span class="st">Pendente</span></div>`).join('');
   abrirModal(esc(c[0]), `<div class="between" style="margin-bottom:14px;gap:12px;flex-wrap:wrap"><div style="flex:1;min-width:220px"><div class="mini" style="margin-bottom:6px">${esc(a.nome)} · ${c[1].length} itens</div>
   <select class="inp" id="cLoja"><option value="">Loja (opcional — corporativo)</option>${S.D.lojas.map(l => `<option value="${l.id}">${esc(l.nome)}</option>`).join('')}</select></div>
@@ -308,6 +310,7 @@ async function salvarChecklist(modeloId) {
 }
 async function verAplicacao(apId) {
   const ap = await chamar(() => api(`/checklists/aplicacoes/${apId}`));
+  if (ap.estrutura) return window.verAplicacaoGuia(apId);
   const lbl = { ok: ['OK', 'green'], warn: ['Atenção', 'amber'], no: ['Não conforme', 'red'] };
   abrirModal(esc(ap.modelo), `<div class="between" style="margin-bottom:12px"><div class="mini">${esc(ap.loja || 'Corporativo')} · ${esc(ap.usuario || 'Carga inicial')} · ${new Date(ap.criado_em).toLocaleString('pt-BR')}</div><span class="tag ${ap.score >= 80 ? 'green' : ap.score >= 50 ? 'amber' : 'red'}">Score ${ap.score}</span></div>
   ${ap.itens.map((t, i) => { const r = ap.respostas[i] || {}; const l = lbl[r.s] || ['—', 'gray']; return `<div class="row-item"><div style="flex:1;font-size:13px">${esc(t)}</div><span class="tag ${l[1]}">${l[0]}</span></div>`; }).join('')}
@@ -375,7 +378,7 @@ S.abasArea.rotina = (id, a) => {
     ${[['Feminino (MILLA)', '600.000', '320.000', '380.000', '250.000', '410.000', '2,0 m'], ['Calçados (DÁHLIA)', '240.000', '150.000', '170.000', '120.000', '140.000', '2,2 m'], ['Acessórios (MILLA)', '90.000', '60.000', '70.000', '40.000', '60.000', '1,8 m'], ['Calçados (DOM CORTEZ)', '130.000', '90.000', '100.000', '70.000', '70.000', '2,5 m'], ['TOTAL', '1.060.000', '620.000', '720.000', '480.000', '680.000', '—']].map(r => `<tr>${r.map((c, j) => `<td>${j === 0 || r[0] === 'TOTAL' ? '<b>' + c + '</b>' : c}</td>`).join('')}</tr>`).join('')}
     </tbody></table></div></div>`;
   }
-  return rot + plan + modelos;
+  return rotinaGuiaHTML(id, a) + rot + plan + modelos;
 };
 
 // --- Guia ---
@@ -383,7 +386,7 @@ S.abasArea.guia = (id, a) => `
 <div class="card p"><div class="between"><div><div class="sect-title">Guia — ${esc(a.nome)}</div><div class="sect-sub">Conhecimento navegável da função</div></div><span class="tag gray">${(a.pilares || []).length + 1} capítulos</span></div>
 <div style="margin-top:8px">
 ${[['Papel da função', a.papel]].concat((a.pilares || []).map(p => [p[0], p[1]])).map((s, i) => `<div class="phase" id="g${i}"><div class="ph" onclick="document.getElementById('g${i}').classList.toggle('open')"><div class="num" style="background:${a.cor}">${i + 1}</div><div style="flex:1"><div style="font-weight:700;font-size:13.5px">${esc(s[0])}</div></div><div class="chev" style="color:var(--muted);transition:.2s">${ic('chev')}</div></div><div class="pbody"><div class="act">${esc(s[1])}</div></div></div>`).join('')}
-</div></div>`;
+</div></div>${conversaHTML(a)}`;
 
 async function gerarAcoesCampanha(cid) {
   const r = await chamar(() => api(`/campanhas/${cid}/gerar-acoes`, { metodo: 'POST' }));
@@ -393,4 +396,5 @@ async function gerarAcoesCampanha(cid) {
 Object.assign(window, { openArea, switchAreaTab, setAreaMarca, openKpi, salvarKpi, setPeriodoMeta, openMetaForm, salvarMeta, atualizarRealizado, salvarRealizado,
   setAcaoView, novaAcao, salvarAcao, openTask, salvarTask, concluirTask, comentarTask, openChecklist, cycleChk, salvarChecklist, verAplicacao, novoChecklist,
   salvarNovoChecklist, openCourse, concluirAula, openVideo, meusCertificados, gerarAcoesCampanha });
+window.renderAreaTabAtual = () => renderAreaTab();
 export { renderAreaTab };
