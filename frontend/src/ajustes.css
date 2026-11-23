@@ -1,0 +1,6 @@
+/* As telas de login/administração convivem com o CSS da plataforma: reforça o botão padrão delas. */
+.centro .btn, .admin .btn, .faixa .btn, .painel .btn { background: var(--petroleo); color: #fff; border: 0; padding: 12px 18px; font-size: 15px; border-radius: 10px; display: inline-block; }
+.centro .btn.secundario, .admin .btn.secundario { background: #fff; color: var(--petroleo); border: 1px solid var(--linha); }
+.centro .btn.perigo, .admin .btn.perigo { background: var(--vermelho); }
+.admin .btn.claro, .faixa .btn.claro { background: #fff; color: var(--petroleo); }
+#login .aviso { margin: 0 0 14px; }

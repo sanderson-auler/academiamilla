@@ -18,6 +18,7 @@ export default function Admin({ rota }) {
         <div className="marca pequena">M</div>
         <b>Academia Milla 360</b><span className="tag">Administração</span>
         <span className="espaco" />
+        <button className="link claro" onClick={() => { window.location.href = '/'; }}>← Voltar à plataforma</button>
         <span className="quem">{usuario?.nome}</span>
         <button className="link claro" onClick={sair}>Sair</button>
       </header>
