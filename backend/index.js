@@ -40,6 +40,7 @@ app.use('/api/plataforma', require('./routes/plataforma'));
 app.use('/api/gestao', require('./routes/usuarios').router);
 app.use('/api/ia', require('./routes/ia'));
 app.use('/api/univ', require('./routes/universidade'));
+app.use('/api/cadastro-areas', require('./routes/areas'));
 app.use('/api', require('./routes/operacao'));
 
 app.use('/api', (req, res) => res.status(404).json({ erro: 'Rota não encontrada' }));

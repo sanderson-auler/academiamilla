@@ -18,11 +18,12 @@ r.get('/base', async (req, res) => {
   const [u, marcas, areas, ind, chk, cur, cal, lojas, com] = await Promise.all([
     pool.query('SELECT id, nome, email, perfil, cargo, area_id, marca FROM usuarios WHERE id = $1', [uid]),
     pool.query('SELECT codigo, cor FROM marcas ORDER BY ordem'),
-    pool.query('SELECT * FROM areas ORDER BY ordem'),
+    pool.query('SELECT * FROM areas WHERE ativo ORDER BY ordem'),
     pool.query('SELECT * FROM indicadores ORDER BY area_id, ordem, id'),
     pool.query('SELECT * FROM checklist_modelos WHERE ativo ORDER BY area_id, ordem, id'),
-    pool.query(`SELECT c.*, COALESCE(p.aulas_feitas,0) AS feitas FROM cursos c
-                LEFT JOIN curso_progresso p ON p.curso_id = c.id AND p.usuario_id = $1 ORDER BY c.area_id, c.ordem, c.id`, [uid]),
+    pool.query(`SELECT c.*, ca.area_id, COALESCE(p.aulas_feitas,0) AS feitas, (p.concluido_em IS NOT NULL) AS concluido FROM cursos c
+                JOIN curso_areas ca ON ca.curso_id = c.id
+                LEFT JOIN curso_progresso p ON p.curso_id = c.id AND p.usuario_id = $1 WHERE c.ativo ORDER BY ca.area_id, c.ordem, c.id`, [uid]),
     pool.query('SELECT * FROM campanhas ORDER BY inicio, id'),
     pool.query('SELECT id, nome, marca FROM lojas WHERE ativa ORDER BY marca, nome'),
     pool.query(`SELECT id, titulo, tipo, corpo, publicado_em FROM conteudos WHERE status = 'Publicado' AND tipo = 'Comunicado' ORDER BY publicado_em DESC LIMIT 5`),
@@ -32,13 +33,13 @@ r.get('/base', async (req, res) => {
   const A = {};
   for (const a of areas.rows) {
     A[a.id] = {
-      nome: a.nome, resp: a.resp, cargo: a.cargo, cor: a.cor, grad: a.grad, ic: a.ic, tag: a.tag, papel: a.papel,
+      nome: a.nome, resp: a.resp, cargo: a.cargo, cor: a.cor, grad: a.grad, ic: a.ic, tag: a.tag, papel: a.papel, abas: a.abas, chips: a.chips,
       ...a.conteudo, kpis: [], checklists: [], cursos: [],
     };
   }
   ind.rows.forEach(k => A[k.area_id]?.kpis.push([k.nome, k.valor, k.variacao, k.positivo, k.serie, k.id]));
   chk.rows.forEach(c => A[c.area_id]?.checklists.push([c.nome, c.itens, c.id, c.estrutura || null]));
-  cur.rows.forEach(c => A[c.area_id]?.cursos.push([c.titulo, `${c.aulas} aulas · ${c.duracao || ''}`.trim(), Math.min(100, Math.round((c.feitas / c.aulas) * 100)), c.id, c.aulas, c.feitas]));
+  cur.rows.forEach(c => A[c.area_id]?.cursos.push([c.titulo, `${c.aulas} ${c.aulas === 1 ? 'aula' : 'aulas'}${c.duracao ? ' · ' + c.duracao : ''}`, c.concluido ? 100 : Math.min(99, Math.round((c.feitas / Math.max(c.aulas, 1)) * 100)), c.id, c.aulas, c.feitas]));
   const CAL = Object.fromEntries(marcas.rows.map(m => [m.codigo, []]));
   cal.rows.forEach(c => CAL[c.marca]?.push([MES[c.inicio.getMonth()], c.nome, `${ddmm(c.inicio)}–${ddmm(c.fim)}`, c.id, iso(c.inicio), iso(c.fim)]));
   const total = await totalDe(uid);
@@ -89,7 +90,7 @@ r.get('/painel', async (req, res) => {
 // Dashboard executivo — índices calculados a partir da execução real.
 r.get('/executivo', pode('exec', 1), async (req, res) => {
   const [areas, acoes, chk, metas, cursos, engaj, cal] = await Promise.all([
-    pool.query('SELECT id, nome, resp FROM areas ORDER BY ordem'),
+    pool.query('SELECT id, nome, resp FROM areas WHERE ativo ORDER BY ordem'),
     pool.query(`SELECT area_id, COUNT(*)::int AS total,
                        COUNT(*) FILTER (WHERE status = 'Concluído')::int AS concl,
                        COUNT(*) FILTER (WHERE status = 'Concluído' AND (prazo IS NULL OR concluido_em::date <= prazo))::int AS no_prazo,
@@ -131,7 +132,7 @@ r.get('/executivo', pode('exec', 1), async (req, res) => {
 async function buscar(termo) {
   const t = `%${termo}%`;
   const [ar, ac, cu, ca, ch, ct] = await Promise.all([
-    pool.query(`SELECT id, nome FROM areas WHERE nome ILIKE $1 OR tag ILIKE $1 OR papel ILIKE $1 OR conteudo::text ILIKE $1 LIMIT 6`, [t]),
+    pool.query(`SELECT id, nome FROM areas WHERE ativo AND (nome ILIKE $1 OR tag ILIKE $1 OR papel ILIKE $1 OR conteudo::text ILIKE $1) LIMIT 6`, [t]),
     pool.query(`SELECT a.id, a.titulo, a.area_id, a.status FROM acoes a WHERE a.titulo ILIKE $1 OR a.descricao ILIKE $1 ORDER BY a.prazo NULLS LAST LIMIT 6`, [t]),
     pool.query(`SELECT id, titulo, area_id FROM cursos WHERE titulo ILIKE $1 LIMIT 6`, [t]),
     pool.query(`SELECT id, nome, marca, inicio, fim FROM campanhas WHERE nome ILIKE $1 ORDER BY inicio LIMIT 6`, [t]),
