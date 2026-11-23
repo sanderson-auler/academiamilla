@@ -37,7 +37,7 @@ r.get('/base', async (req, res) => {
     };
   }
   ind.rows.forEach(k => A[k.area_id]?.kpis.push([k.nome, k.valor, k.variacao, k.positivo, k.serie, k.id]));
-  chk.rows.forEach(c => A[c.area_id]?.checklists.push([c.nome, c.itens, c.id]));
+  chk.rows.forEach(c => A[c.area_id]?.checklists.push([c.nome, c.itens, c.id, c.estrutura || null]));
   cur.rows.forEach(c => A[c.area_id]?.cursos.push([c.titulo, `${c.aulas} aulas · ${c.duracao || ''}`.trim(), Math.min(100, Math.round((c.feitas / c.aulas) * 100)), c.id, c.aulas, c.feitas]));
   const CAL = Object.fromEntries(marcas.rows.map(m => [m.codigo, []]));
   cal.rows.forEach(c => CAL[c.marca]?.push([MES[c.inicio.getMonth()], c.nome, `${ddmm(c.inicio)}–${ddmm(c.fim)}`, c.id, iso(c.inicio), iso(c.fim)]));

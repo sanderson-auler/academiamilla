@@ -10,6 +10,8 @@ const pkg = require('./package.json');
 const app = express();
 app.set('trust proxy', 1); // atrás do Nginx Proxy Manager
 app.use(helmet());
+// Envio de arquivos para a base de conhecimento da IA (até 15 MB em base64).
+app.use('/api/ia', express.json({ limit: '25mb' }));
 app.use(express.json({ limit: '2mb' }));
 
 const origens = (process.env.CORS_ORIGINS || '').split(',').map(s => s.trim()).filter(Boolean);
@@ -35,6 +37,7 @@ app.use('/api/auth', require('./routes/auth'));
 app.use('/api/admin/config', require('./routes/admin-config'));
 app.use('/api/plataforma', require('./routes/plataforma'));
 app.use('/api/gestao', require('./routes/usuarios').router);
+app.use('/api/ia', require('./routes/ia'));
 app.use('/api', require('./routes/operacao'));
 
 app.use('/api', (req, res) => res.status(404).json({ erro: 'Rota não encontrada' }));
