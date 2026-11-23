@@ -38,6 +38,14 @@ Projeto **novo e isolado**. Não compartilha servidor, banco, storage nem Git co
 - **Dados de demonstração:** linhas com `demo = TRUE` (migração 003). Removíveis em Configurações → Sistema. Guias, áreas, indicadores, checklists, cursos, lojas e calendário são dados reais de base.
 - Todo texto vindo do banco é escapado com `esc()` antes de ir para o HTML.
 
+## 5.2 Guia de supervisão e agentes de IA (0.4.0)
+- **Guia de supervisão:** `areas.conteudo` aceita `rotina_loja`, `programacao` (semanas → dias → árvore de tarefas, com `blocos` reutilizáveis via `ref`) e `conversa`. Telas em `frontend/src/plataforma/telas-guia.js`.
+- **Checklist estruturado:** `checklist_modelos.estrutura` = `{ escala: 'conformidade'|'comparativa', cabecalho, blocos: [{ nome, peso, area, acao, itens }] }`; `itens` continua sendo a lista achatada. Ao salvar: índice (OK 100 · Atenção 50 · Não 0, só itens avaliados), ponderado por peso, classificação (Destaque ≥ 85 · Estável 70–84 · Atenção 50–69 · Prioridade alta < 50) e ações no plano (Não em bloco de peso 3: 48 h · Não: 7 dias · Atenção: 15 dias; comparativa: concorrente acima → 15 dias).
+- **Agentes de IA:** `routes/ia.js` (`/api/ia`) + `lib/ia.js`. Um agente por área (`ia_agentes.codigo` = id da área) e o geral (`geral`). Provedores com chave cifrada (`ia_provedores`, `pgp_sym_encrypt` com `SESSION_SECRET`); adaptadores OpenAI-compatível, Anthropic e Gemini. Sem provedor configurado (ou com erro), o agente responde em **modo busca**.
+- **Conhecimento:** arquivos e textos em `ia_documentos` (original no R2 privado quando configurado; senão no banco), divididos em `ia_trechos` e buscados por texto completo (`tsvector` português, texto sem acento). O guia da área vira o documento `origem = 'guia'`, refeito pelo botão "Atualizar guia da área".
+- **Aprendizado:** `ia_aprendizados` (correcao, validada, revisao, lacuna, faq, instrucao) com status pendente/aprovado/rejeitado. Aprovados entram no prompt com prioridade sobre as fontes. `aprendizado_auto` aprova correções e validações sem revisão.
+- **RBAC:** módulo `ia` (1 usa · 2 configura qualquer agente e cadastra chaves). O usuário com `area_id` configura o agente da própria área.
+
 ## 6. Versão e changelog
 Fonte da verdade: o **topo** de `frontend/src/data/changelog.js`. Toda entrega que vai ao ar sobe a versão ali (e em `backend/package.json`). O `deploy.sh` confere se a versão no ar é a mesma do código.
 

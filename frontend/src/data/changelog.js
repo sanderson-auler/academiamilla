@@ -2,6 +2,18 @@
 // O deploy.sh lê a versão daqui e confere se é a mesma que está no ar.
 export const CHANGELOG = [
   {
+    versao: "0.4.0",
+    data: "2026-11-23",
+    itens: [
+      "Supervisão Comercial com o Guia de Supervisão de Loja: rotina na loja da abertura ao fechamento, programação mensal por semana (com o detalhe de cada dia) e roteiro de conversa com o gerente.",
+      "Checklists de Visita à Loja (49 pontos em 11 blocos) e Visita à Concorrência (36 pontos): cabeçalho da visita, observação por item, índice ponderado, classificação, relatório com leitura da visita e plano de ação automático com os prazos do guia.",
+      "Assistente IA em cada área e Assistente Milla geral: respostas com base no guia da área e nos conteúdos publicados, com citação das fontes.",
+      "Configuração do agente de IA: identidade, tom de voz e personalidade, instruções da área, restrições, encaminhamentos, provedor e modelo (OpenAI, Claude, Gemini, Maritaca, DeepSeek, Mistral, Grok, Groq, OpenRouter ou compatível).",
+      "Base de conhecimento por área: envio de PDF, Word, Excel, PowerPoint, TXT, CSV e HTML, e conhecimento escrito direto na plataforma.",
+      "Aprendizado governado: feedback 👍/👎 nas respostas, correções, lacunas de conhecimento e aprovação pela área (ou aprendizado automático).",
+    ],
+  },
+  {
     versao: "0.3.0",
     data: "2026-11-23",
     itens: [

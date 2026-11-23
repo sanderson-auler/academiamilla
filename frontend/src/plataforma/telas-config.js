@@ -1,16 +1,19 @@
 // Configurações & RBAC: permissões por perfil, usuários (com convite por e-mail), lojas e sistema.
 import { S, api, esc, head, abrirModal, fecharModal, toast, chamar, pode, opcoes, val, iniciais } from './nucleo.js';
+import { abaIAConfig } from './telas-ia.js';
 
-const MOD_NOMES = { exec: 'Dash Exec.', areas: 'Áreas', cal: 'Calendário', acao: 'Plano Ação', comite: 'Comitê', check: 'Checklists', cms: 'CMS', rbac: 'RBAC' };
+const MOD_NOMES = { exec: 'Dash Exec.', areas: 'Áreas', cal: 'Calendário', acao: 'Plano Ação', comite: 'Comitê', check: 'Checklists', cms: 'CMS', ia: 'IA', rbac: 'RBAC' };
 S.cfgAba = 'usuarios';
 
 S.telas.config = async () => {
   const [pf, us, lj, demo] = await Promise.all([api('/gestao/perfis'), api('/gestao/usuarios'), api('/gestao/lojas'), api('/gestao/demo').catch(() => null)]);
   S.cfg = { pf, us, lj, demo };
   const ed = pode('rbac', 2);
-  const abas = [['usuarios', `Usuários (${us.filter(u => u.ativo).length})`], ['rbac', 'Permissões (RBAC)'], ['lojas', `Lojas (${lj.filter(l => l.ativa).length})`], ['sistema', 'Sistema']];
+  const abas = [['usuarios', `Usuários (${us.filter(u => u.ativo).length})`], ['rbac', 'Permissões (RBAC)'], ['lojas', `Lojas (${lj.filter(l => l.ativa).length})`], ['ia', '✨ Inteligência Artificial'], ['sistema', 'Sistema']];
   let corpo = '';
-  if (S.cfgAba === 'rbac') {
+  if (S.cfgAba === 'ia') {
+    corpo = await abaIAConfig();
+  } else if (S.cfgAba === 'rbac') {
     const dot = v => `<span class="dotp ${v === 2 ? 'y' : v === 1 ? 'p' : 'n'}"></span>`;
     corpo = `<div class="card p"><div class="sect-title">Matriz de acesso</div><div class="sect-sub">${pf.perfis.length} perfis × módulos · <span class="dotp y"></span> Total &nbsp;<span class="dotp p"></span> Leitura &nbsp;<span class="dotp n"></span> Sem acesso${ed ? ' · altere e salve por perfil' : ''}</div>
     <div style="overflow-x:auto"><table class="matrix"><thead><tr><th>Perfil</th>${pf.modulos.map(m => `<th>${MOD_NOMES[m] || m}</th>`).join('')}${ed ? '<th></th>' : ''}</tr></thead><tbody>
