@@ -2,6 +2,15 @@
 // O deploy.sh lê a versão daqui e confere se é a mesma que está no ar.
 export const CHANGELOG = [
   {
+    versao: "0.10.1",
+    data: "2026-11-25",
+    itens: [
+      "Usuários: o botão Convite volta a mostrar a janela com o link (enviado por e-mail e com opção de copiar).",
+      "Novo botão Redefinir senha: enviar ao usuário, por e-mail, o link de redefinição (válido por 72 h, com opção de só gerar e copiar o link) ou definir uma nova senha na hora.",
+      "Permissões (RBAC): coluna do módulo BI com o nome \"BI\".",
+    ],
+  },
+  {
     versao: "0.10.0",
     data: "2026-11-25",
     itens: [

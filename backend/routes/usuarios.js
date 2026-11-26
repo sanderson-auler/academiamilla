@@ -2,7 +2,7 @@
 const crypto = require('crypto');
 const { Router } = require('express');
 const { pool } = require('../db');
-const { exigirLogin, emailValido } = require('../lib/auth');
+const { exigirLogin, emailValido, hashSenha } = require('../lib/auth');
 const { pode, perfis, limparCache, MODULOS } = require('../lib/rbac');
 const { enviarEmail, obterConfig } = require('../lib/email');
 
@@ -41,6 +41,25 @@ async function enviarConvite(u, link) {
     return true;
   } catch (e) {
     console.error('[convite] falha no e-mail:', e.message);
+    return false;
+  }
+}
+
+async function enviarRedefinicao(u, link) {
+  if (!(await obterConfig())) return false;
+  try {
+    await enviarEmail({
+      para: u.email,
+      assunto: 'Redefinição de senha — Academia Milla 360',
+      texto: `Olá, ${u.nome}!\n\nRecebemos um pedido para redefinir a sua senha na Academia Milla 360. Crie a nova senha pelo link abaixo (válido por 72 horas):\n${link}\n\nSe você não pediu a redefinição, desconsidere este e-mail: a senha atual continua valendo.\n\nGrupo Milla`,
+      html: `<div style="font-family:Segoe UI,Arial,sans-serif;max-width:520px"><h2 style="color:#0B3D4D">Academia Milla 360</h2>
+        <p>Olá, <b>${u.nome.replace(/</g, '')}</b>!</p><p>Recebemos um pedido para redefinir a sua senha. Crie a nova senha pelo botão abaixo (link válido por 72 horas).</p>
+        <p><a href="${link}" style="background:#C8102E;color:#fff;padding:12px 20px;border-radius:8px;text-decoration:none;font-weight:700">Criar nova senha</a></p>
+        <p style="color:#5B6B73;font-size:12px">Se você não pediu a redefinição, desconsidere este e-mail: a senha atual continua valendo.<br>Se o botão não abrir, copie este endereço no navegador:<br>${link}</p></div>`,
+    });
+    return true;
+  } catch (e) {
+    console.error('[senha] falha no e-mail:', e.message);
     return false;
   }
 }
@@ -95,6 +114,25 @@ r.post('/usuarios/:id/convite', pode('rbac', 2), async (req, res) => {
   if (!u) return res.status(404).json({ erro: 'Usuário não encontrado ou inativo.' });
   const link = await gerarConvite(u.id);
   res.json({ link, emailEnviado: await enviarConvite(u, link) });
+});
+
+// Redefinição de senha pela administração:
+//  { modo: 'definir', senha } → grava a nova senha na hora (mín. 8 caracteres) e cancela links pendentes;
+//  { modo: 'link', enviarEmail } → gera o link de 72 h (o mesmo do convite) e, se pedido, envia ao e-mail do usuário.
+r.post('/usuarios/:id/senha', pode('rbac', 2), async (req, res) => {
+  const { rows: [u] } = await pool.query('SELECT id, nome, email FROM usuarios WHERE id = $1 AND ativo', [req.params.id]);
+  if (!u) return res.status(404).json({ erro: 'Usuário não encontrado ou inativo.' });
+  const b = req.body || {};
+  if (b.modo === 'definir') {
+    const senha = String(b.senha || '');
+    if (senha.length < 8) return res.status(400).json({ erro: 'A senha precisa ter pelo menos 8 caracteres.' });
+    await pool.query('UPDATE usuarios SET senha_hash = $2, demo = FALSE WHERE id = $1', [u.id, await hashSenha(senha)]);
+    await pool.query('UPDATE convites_usuario SET expira_em = now() WHERE usuario_id = $1 AND usado_em IS NULL', [u.id]);
+    return res.json({ ok: true, modo: 'definir' });
+  }
+  const enviar = b.enviarEmail !== false;
+  const link = await gerarConvite(u.id);
+  res.json({ modo: 'link', link, email: u.email, enviarEmail: enviar, emailEnviado: enviar ? await enviarRedefinicao(u, link) : false });
 });
 
 // ---------- Perfis (RBAC) ----------

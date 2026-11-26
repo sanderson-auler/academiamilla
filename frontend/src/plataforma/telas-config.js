@@ -2,7 +2,7 @@
 import { S, api, esc, head, abrirModal, fecharModal, toast, chamar, pode, opcoes, val, iniciais } from './nucleo.js';
 import { abaIAConfig } from './telas-ia.js';
 
-const MOD_NOMES = { exec: 'Dash Exec.', areas: 'Áreas', cal: 'Calendário', acao: 'Plano Ação', comite: 'Comitê', check: 'Checklists', cms: 'CMS', ia: 'IA', rbac: 'RBAC' };
+const MOD_NOMES = { exec: 'Dash Exec.', areas: 'Áreas', cal: 'Calendário', acao: 'Plano Ação', comite: 'Comitê', check: 'Checklists', cms: 'CMS', ia: 'IA', rbac: 'RBAC', bi: 'BI' };
 S.cfgAba = 'usuarios';
 
 S.telas.config = async () => {
@@ -35,7 +35,7 @@ S.telas.config = async () => {
     <div style="overflow-x:auto"><table><thead><tr><th>Usuário</th><th>Perfil</th><th>Área</th><th>Marca / loja</th><th>Situação</th>${ed ? '<th></th>' : ''}</tr></thead><tbody>
     ${us.map(u => `<tr style="${u.ativo ? '' : 'opacity:.5'}"><td><div style="display:flex;align-items:center;gap:10px"><div class="who">${iniciais(u.nome)}</div><div><b>${esc(u.nome)}</b><div class="mini">${esc(u.email)}</div></div></div></td><td>${esc(pf.perfis.find(p => p.codigo === u.perfil)?.nome || u.perfil)}</td><td>${esc(u.area || '—')}</td><td class="mini">${esc(u.loja || u.marca || '—')}</td>
     <td>${!u.ativo ? '<span class="tag gray">Inativo</span>' : u.demo ? '<span class="tag amber">Exemplo · sem acesso</span>' : u.convite_pendente ? '<span class="tag amber">Convite pendente</span>' : u.ultimo_acesso ? `<span class="tag green">Ativo</span>` : '<span class="tag blue">Sem acesso ainda</span>'}</td>
-    ${ed ? `<td style="white-space:nowrap"><button class="linkbtn" onclick="editarUsuario(${u.id})">Editar</button>${u.ativo ? ` · <button class="linkbtn" onclick="enviarConvite(${u.id})">Convite</button>` : ''}</td>` : ''}</tr>`).join('')}
+    ${ed ? `<td style="white-space:nowrap"><button class="linkbtn" onclick="editarUsuario(${u.id})">Editar</button>${u.ativo ? ` · <button class="linkbtn" onclick="enviarConvite(${u.id})">Convite</button> · <button class="linkbtn" onclick="redefinirSenha(${u.id})">Redefinir senha</button>` : ''}</td>` : ''}</tr>`).join('')}
     </tbody></table></div></div>`;
   }
   return `${head('Configurações & RBAC', 'Usuários · perfis e permissões · lojas · sistema', '')}
@@ -60,7 +60,7 @@ function editarUsuario(id) {
   ${id ? '' : '<div class="mini" style="margin-top:10px">O usuário recebe por e-mail um link (válido por 72 h) para definir a senha.</div>'}`, true);
 }
 function mostrarLink(r, titulo) {
-  abrirModal(titulo, `<p style="font-size:13.5px;line-height:1.6;margin-top:0">${r.emailEnviado ? '✅ Convite enviado por e-mail.' : '⚠️ O e-mail não pôde ser enviado (confira a configuração de SMTP).'} Se preferir, copie o link e envie pelo WhatsApp:</p>
+  abrirModal(titulo, `<p style="font-size:13.5px;line-height:1.6;margin-top:0">${r.enviarEmail === false ? 'Link gerado (não foi enviado por e-mail).' : r.emailEnviado ? `✅ Link enviado por e-mail${r.email ? ` para <b>${esc(r.email)}</b>` : ''}.` : '⚠️ O e-mail não pôde ser enviado (confira a configuração de SMTP).'} Se preferir, copie o link e envie pelo WhatsApp:</p>
   <input class="inp" id="lnk" value="${esc(r.link)}" readonly onclick="this.select()"><div style="display:flex;gap:8px;margin-top:12px"><button class="btn red" onclick="navigator.clipboard.writeText(document.getElementById('lnk').value).then(()=>toastOk('Link copiado.'))">Copiar link</button><button class="btn ghost" onclick="fecharModal()">Fechar</button></div><div class="mini" style="margin-top:8px">Link de uso único, válido por 72 horas.</div>`);
 }
 async function salvarUsuario(id) {
@@ -72,7 +72,35 @@ async function salvarUsuario(id) {
 }
 async function enviarConvite(id) {
   const r = await chamar(() => api(`/gestao/usuarios/${id}/convite`, { metodo: 'POST' }));
-  mostrarLink(r, 'Convite gerado'); go('config');
+  await go('config');
+  mostrarLink(r, 'Convite gerado');
+}
+function redefinirSenha(id) {
+  const u = S.cfg.us.find(x => x.id === id);
+  abrirModal(`Redefinir senha · ${esc(u.nome)}`, `<div class="segmented" style="margin-bottom:14px"><button id="rsBL" class="on" onclick="modoSenha('link')">Enviar link por e-mail</button><button id="rsBD" onclick="modoSenha('definir')">Definir nova senha</button></div>
+  <div id="rsLink"><p class="mini" style="line-height:1.6;margin-top:0">O usuário recebe em <b>${esc(u.email)}</b> um link (válido por 72 h) para criar a nova senha. A senha atual continua valendo até o link ser usado.</p>
+  <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn red" onclick="linkSenha(${id}, true)">Enviar por e-mail</button><button class="btn ghost" onclick="linkSenha(${id}, false)">Só gerar o link</button><button class="btn ghost" onclick="fecharModal()">Cancelar</button></div></div>
+  <div id="rsDef" style="display:none"><div class="form-grid"><div><label class="lbl">Nova senha</label><input class="inp" type="password" id="rsS1" autocomplete="new-password"></div><div><label class="lbl">Confirmar a senha</label><input class="inp" type="password" id="rsS2" autocomplete="new-password"></div></div>
+  <div class="mini" style="margin-top:8px">Mínimo de 8 caracteres. A senha passa a valer na hora e os links pendentes deste usuário são cancelados. Combine com o usuário como ele vai receber a senha.</div>
+  <div style="display:flex;gap:8px;margin-top:12px"><button class="btn red" onclick="salvarNovaSenha(${id})">Salvar nova senha</button><button class="btn ghost" onclick="fecharModal()">Cancelar</button></div></div>`);
+}
+function modoSenha(m) {
+  document.getElementById('rsLink').style.display = m === 'link' ? '' : 'none';
+  document.getElementById('rsDef').style.display = m === 'definir' ? '' : 'none';
+  document.getElementById('rsBL').classList.toggle('on', m === 'link');
+  document.getElementById('rsBD').classList.toggle('on', m === 'definir');
+}
+async function linkSenha(id, enviarEmail) {
+  const r = await chamar(() => api(`/gestao/usuarios/${id}/senha`, { metodo: 'POST', corpo: { modo: 'link', enviarEmail } }));
+  await go('config');
+  mostrarLink(r, enviarEmail ? 'Redefinição de senha enviada' : 'Link de redefinição de senha');
+}
+async function salvarNovaSenha(id) {
+  const s1 = val('rsS1'), s2 = val('rsS2');
+  if (s1.length < 8) return toast('A senha precisa ter pelo menos 8 caracteres.', 'erro');
+  if (s1 !== s2) return toast('As duas senhas não conferem.', 'erro');
+  await chamar(() => api(`/gestao/usuarios/${id}/senha`, { metodo: 'POST', corpo: { modo: 'definir', senha: s1 } }));
+  fecharModal(); toast('Nova senha salva.', 'ok'); go('config');
 }
 async function salvarPerfil(cod) {
   const permissoes = {};
@@ -100,4 +128,4 @@ async function limparDemo() {
   await window.recarregarBaseGlobal(); toast('Dados de demonstração removidos.', 'ok'); go('config');
 }
 
-Object.assign(window, { cfgAba, editarUsuario, salvarUsuario, enviarConvite, salvarPerfil, novaLoja, editarLoja, salvarLoja, limparDemo, toastOk: m => toast(m, 'ok') });
+Object.assign(window, { cfgAba, editarUsuario, salvarUsuario, enviarConvite, redefinirSenha, modoSenha, linkSenha, salvarNovaSenha, salvarPerfil, novaLoja, editarLoja, salvarLoja, limparDemo, toastOk: m => toast(m, 'ok') });

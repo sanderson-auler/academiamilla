@@ -1,6 +1,6 @@
 {
   "name": "academiamilla-api",
-  "version": "0.10.0",
+  "version": "0.10.1",
   "private": true,
   "description": "API da Academia Milla 360",
   "main": "index.js",
