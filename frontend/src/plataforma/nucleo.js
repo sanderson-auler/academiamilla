@@ -54,6 +54,7 @@ export const val = id => document.getElementById(id)?.value ?? '';
 const NAV = [
   { g: 'Início' }, { id: 'home', t: 'Meu Painel', ic: 'home' }, { id: 'areas', t: 'Áreas', ic: 'grid', mod: 'areas' }, { id: 'exec', t: 'Dashboard Executivo', ic: 'chart', mod: 'exec' },
   { g: 'Gestão Comercial' }, { id: 'cal', t: 'Calendário Comercial', ic: 'cal', mod: 'cal' }, { id: 'comite', t: 'Comitê Comercial', ic: 'users', mod: 'comite' },
+  { g: 'BI' }, { id: 'bi', t: 'Relatórios BI', ic: 'chart', mod: 'bi' },
   { g: 'Desenvolvimento' }, { id: 'univ', t: 'Universidade', ic: 'cap' }, { id: 'game', t: 'Gamificação', ic: 'medal' },
   { g: 'Inteligência' }, { id: 'ia', t: 'Assistente Milla', ic: 'spark' }, { id: 'cms', t: 'CMS / Conteúdos', ic: 'layers', mod: 'cms' },
   { g: 'Administração' }, { id: 'config', t: 'Configurações & RBAC', ic: 'gear', mod: 'rbac' },

@@ -12,6 +12,7 @@ import './telas-comite.js';
 import './checklists-edit.js';
 import './chave-ajuda.js';
 import './arquivos.js';
+import './telas-bi.js';
 
 export const CASCA = `
 <div id="app">
