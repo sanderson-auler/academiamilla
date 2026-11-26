@@ -2,6 +2,17 @@
 // O deploy.sh lê a versão daqui e confere se é a mesma que está no ar.
 export const CHANGELOG = [
   {
+    versao: "0.10.0",
+    data: "2026-11-25",
+    itens: [
+      "Novo menu BI → Relatórios BI, com relatórios alimentados pelo DW do Grupo Milla.",
+      "Primeiro relatório: Simulador de Compras por Faixa de Preço — planejamento de verba do semestre por linha, grupo, subgrupo e faixa, com base na venda líquida do ano anterior (ano base 2025 ou 2026).",
+      "No simulador: meta de peças, % de mix por faixa, PMV, mkp meta, cobertura, pedidos pendentes e previsão de venda editáveis; venda I/II/III, CMV, estoque projetado, compra e verba calculados como na planilha de planejamento de Compras.",
+      "Ícone \"i\" em cada coluna com o que é o campo, a fórmula e a origem do dado; botões de Dicionário de dados, Diagrama de dados (tabelas e relacionamentos) e Validação contra a planilha.",
+      "Carga de dados pela administração (arquivo do DW), com histórico das cargas; novo módulo \"BI\" nas permissões por perfil (leitura para todos, total para quem administra o RBAC).",
+    ],
+  },
+  {
     versao: "0.9.0",
     data: "2026-11-23",
     itens: [
