@@ -14,6 +14,8 @@ app.use(helmet());
 app.use('/api/ia', express.json({ limit: '25mb' }));
 app.use('/api/univ', express.json({ limit: '12mb' }));
 app.use('/api/comite-gestao', express.json({ limit: '5mb' }));
+// Importação da carga do BI (arquivo JSON do DW, ~0,5 MB).
+app.use('/api/bi', express.json({ limit: '10mb' }));
 app.use(express.json({ limit: '2mb' }));
 
 const origens = (process.env.CORS_ORIGINS || '').split(',').map(s => s.trim()).filter(Boolean);
@@ -45,6 +47,7 @@ app.use('/api/cadastro-areas', require('./routes/areas'));
 app.use('/api/comite-gestao', require('./routes/comite'));
 app.use('/api/checklists-gestao', require('./routes/checklists'));
 app.use('/api/arquivos', require('./routes/arquivos'));
+app.use('/api/bi', require('./routes/bi'));
 app.use('/api', require('./routes/checklists').leitura);
 app.use('/api', require('./routes/operacao'));
 

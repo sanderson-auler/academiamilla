@@ -2,7 +2,7 @@
 // { modulo: 0 sem acesso | 1 leitura | 2 total }. Cache de 30 s.
 const { pool } = require('../db');
 
-const MODULOS = ['exec', 'areas', 'cal', 'acao', 'comite', 'check', 'cms', 'ia', 'rbac'];
+const MODULOS = ['exec', 'areas', 'cal', 'acao', 'comite', 'check', 'cms', 'ia', 'rbac', 'bi'];
 let cache = { em: 0, mapa: {} };
 
 async function perfis() {
